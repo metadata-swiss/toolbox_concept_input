@@ -695,12 +695,12 @@ def fetch_user_agencies(token):
 
 def read_csv_with_encoding_fallback(file, **kwargs):
     """Read CSV content trying multiple encodings and delimiters."""
-    from io import StringIO
+    from io import StringIO, TextIOWrapper, BytesIO
     
     if hasattr(file, 'read'):
-        pos = file.tell() if hasattr(file, 'tell') else 0
+        pos = file.tell() if hasattr(file, 'tell') else None
         content = file.read()
-        if hasattr(file, 'seek'):
+        if hasattr(file, 'seek') and pos is not None:
             try:
                 file.seek(pos)
             except Exception:
@@ -711,10 +711,7 @@ def read_csv_with_encoding_fallback(file, **kwargs):
     if isinstance(content, str):
         return pd.read_csv(StringIO(content), **kwargs)
     
-    if isinstance(content, bytes):
-        raw_bytes = content
-    else:
-        raw_bytes = str(content).encode('utf-8')
+    raw_bytes = content if isinstance(content, bytes) else str(content).encode('utf-8')
     
     detected_encoding = None
     try:
@@ -734,8 +731,8 @@ def read_csv_with_encoding_fallback(file, **kwargs):
     last_error = None
     for encoding in encodings:
         try:
-            text = raw_bytes.decode(encoding)
-            return pd.read_csv(StringIO(text), **kwargs)
+            text_io = TextIOWrapper(BytesIO(raw_bytes), encoding=encoding, newline='')
+            return pd.read_csv(text_io, **kwargs)
         except Exception as exc:
             last_error = exc
             continue
