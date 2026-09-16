@@ -8,7 +8,7 @@ import base64
 import hmac
 import hashlib
 import jwt
-from pandas.api.types import is_numeric_dtype, is_object_dtype
+from pandas.api.types import is_numeric_dtype, is_object_dtype, is_string_dtype
 import requests
 import config
 import uuid
@@ -384,7 +384,10 @@ def analyze_column_type(series):
     
     # Check if all values are years
     all_years = False
-    if is_numeric_dtype(series) or is_object_dtype(series):
+    # pandas 3.0 infers text columns as the dedicated ``str`` dtype rather
+    # than ``object``. Include both so text-formatted years keep the same
+    # classification as before the upgrade.
+    if is_numeric_dtype(series) or is_object_dtype(series) or is_string_dtype(series):
         all_years = all(is_year_value(val) for val in series.dropna())
     
     # If it's a year column by name or all values are years, treat as Number
