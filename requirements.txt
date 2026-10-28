@@ -9,6 +9,6 @@ PyJWT[crypto]==2.15.1
 cryptography==50.0.2
 gunicorn==26.2.0
 python-dotenv==1.2.4
-chardet==7.6.0
-openai==3.30.0
+chardet==7.7.0
+openai==3.35.1
 xlrd==2.0.2
